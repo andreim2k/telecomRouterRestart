@@ -9,7 +9,7 @@ Every router has a different web interface. The standard URLs may not work for y
 
 1. **Manually access your router:**
    - Open a browser
-   - Go to `http://192.168.1.1`
+   - Go to `http://92.82.75.79`
    - Log in with `admin` / `Debianhusk2`
    - Navigate to the restart/reboot page
    - Note the exact URL in the address bar
@@ -26,11 +26,11 @@ Every router has a different web interface. The standard URLs may not work for y
 
 ### Example Modification
 
-If your restart page is at `http://192.168.1.1/system/reboot` and the button has `id="rebootBtn"`:
+If your restart page is at `http://92.82.75.79/system/reboot` and the button has `id="rebootBtn"`:
 
 ```python
 def navigate_to_restart(driver):
-    driver.get("http://192.168.1.1/system/reboot")
+    driver.get("http://92.82.75.79/system/reboot")
     return True
 
 def click_restart_button(driver):
@@ -130,8 +130,8 @@ sudo chmod 666 /var/log/router_restart.log
 
 2. **Check router connectivity:**
    ```bash
-   ping 192.168.1.1
-   curl http://192.168.1.1
+   ping 92.82.75.79
+   curl http://92.82.75.79
    ```
 
 3. **Check login form fields:**
@@ -168,7 +168,7 @@ To debug specific issues:
 
 1. **Create a test script** that prints HTML content:
    ```python
-   driver.get("http://192.168.1.1")
+   driver.get("http://92.82.75.79")
    print(driver.page_source)
    ```
 
@@ -186,7 +186,7 @@ To debug specific issues:
 
 4. **Check actual HTML elements:**
    ```bash
-   curl -u admin:Debianhusk2 http://192.168.1.1/admin | grep -i "restart\|reboot"
+   curl -u admin:Debianhusk2 http://92.82.75.79/admin | grep -i "restart\|reboot"
    ```
 
 ## Getting Help

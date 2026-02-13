@@ -13,7 +13,7 @@ A fully automated Selenium-based router restart system for ZTE F6605R.
 ## What It Does
 
 Automatically restarts your router at **3:00 AM every night** via:
-1. HTTPS login to 192.168.1.1
+1. HTTPS login to 92.82.75.79
 2. Navigate through web menus
 3. Click restart button
 4. Confirm restart
@@ -86,7 +86,7 @@ Router will restart daily at 3:00 AM.
 ## Key Configuration
 
 ```python
-ROUTER_URL = "https://192.168.1.1"
+ROUTER_URL = "https://92.82.75.79"
 ROUTER_USERNAME = "admin"
 ROUTER_PASSWORD = "Debianhusk2"
 TIMEOUT = 10  # seconds

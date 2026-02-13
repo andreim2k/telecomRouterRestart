@@ -6,7 +6,7 @@ Automatically restart a ZTE F6605R router every night at 3 AM using Selenium.
 
 ### Prerequisites
 - Linux machine with Python 3.7+
-- Network access to router at 192.168.1.1
+- Network access to router at 92.82.75.79
 
 ### Installation
 
@@ -101,7 +101,7 @@ On macOS, logs are saved to `~/router_restart.log` instead.
 
 ### Script Fails to Run
 
-1. Verify router is online: `ping 192.168.1.1`
+1. Verify router is online: `ping 92.82.75.79`
 2. Check credentials: admin / Debianhusk2
 3. View logs: `tail ~/router_restart.log`
 

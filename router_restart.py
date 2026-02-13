@@ -14,7 +14,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
 
 # Configuration
-ROUTER_URL = "https://192.168.1.1"
+ROUTER_URL = "https://92.82.75.79"
 ROUTER_USERNAME = "admin"
 ROUTER_PASSWORD = "Debianhusk2"
 TIMEOUT = 10  # seconds

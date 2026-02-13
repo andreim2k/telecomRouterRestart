@@ -50,12 +50,12 @@ python3 router_restart_test.py
 TEST MODE: Router Restart Script Test
 This will verify all steps EXCEPT the final confirmation
 ============================================================
-[timestamp] - INFO - Accessing router at http://192.168.1.1
+[timestamp] - INFO - Accessing router at http://92.82.75.79
 [timestamp] - INFO - Login submitted, waiting for page load...
 [timestamp] - INFO - ✓ Successfully logged in
 [timestamp] - INFO - Navigating to restart page...
-[timestamp] - INFO -   Trying: http://192.168.1.1/admin/restart
-[timestamp] - INFO - ✓ Found restart page at http://192.168.1.1/admin/restart
+[timestamp] - INFO -   Trying: http://92.82.75.79/admin/restart
+[timestamp] - INFO - ✓ Found restart page at http://92.82.75.79/admin/restart
 [timestamp] - INFO - Looking for restart button...
 [timestamp] - INFO - ✓ Found restart button: XPath: Repornire text
 [timestamp] - INFO -   Button text: Repornire
@@ -171,7 +171,7 @@ sudo chmod +x /usr/local/bin/chromedriver
 **Cause**: Router login form has different field names.
 
 **Fix**:
-1. Open browser and go to `http://192.168.1.1`
+1. Open browser and go to `http://92.82.75.79`
 2. Right-click on username field → Inspect
 3. Look for the `name=` attribute (e.g., `user` instead of `username`)
 4. Update `router_restart.py` line 65-67:
@@ -208,7 +208,7 @@ sudo chmod +x /usr/local/bin/chromedriver
 **Fix**:
 1. Log into your router manually
 2. Find the restart/reboot page
-3. Note the URL (e.g., `http://192.168.1.1/system/settings/reboot`)
+3. Note the URL (e.g., `http://92.82.75.79/system/settings/reboot`)
 4. Update `router_restart.py` line 109:
    ```python
    restart_urls = [
@@ -269,7 +269,7 @@ grep ERROR /var/log/router_restart.log
 - [ ] **Setup**: Dependencies installed, virtual environment created
 - [ ] **Chrome**: `google-chrome --version` or `chromium-browser --version` works
 - [ ] **ChromeDriver**: `chromedriver --version` works and matches Chrome version
-- [ ] **Network**: `ping 192.168.1.1` succeeds
+- [ ] **Network**: `ping 92.82.75.79` succeeds
 - [ ] **Credentials**: Can log in manually with admin/Debianhusk2
 - [ ] **Test Script**: `python3 router_restart_test.py` completes successfully
 - [ ] **Test Script Output**: Shows "✓ TEST SUCCESSFUL"
