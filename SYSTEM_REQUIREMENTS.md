@@ -9,9 +9,11 @@ Complete list of all dependencies required to run the Router Restart Automation.
 
 ### Browser and WebDriver
 ```bash
-chromium-browser       # 2:1snap1-0ubuntu2 (Transitional package)
-chromium-chromedriver  # 2:1snap1-0ubuntu2 (WebDriver for Chromium)
+google-chrome-stable   # 145.0.7632.75+ (from Google's repository)
+chromedriver           # 145.0.7632.45+ (WebDriver for Chrome)
 ```
+
+**Note:** The `setup.sh` script automatically installs Google Chrome from Google's official repository.
 
 ### Python Development Tools
 ```bash
@@ -74,13 +76,12 @@ chmod +x setup.sh
    sudo apt-get update
    ```
 
-2. **Install system packages:**
+2. **Add Google Chrome repository and install:**
    ```bash
-   sudo apt-get install -y \
-     chromium-browser \
-     chromium-chromedriver \
-     python3-pip \
-     python3-dev
+   wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | sudo apt-key add -
+   echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | sudo tee /etc/apt/sources.list.d/google.list
+   sudo apt-get update
+   sudo apt-get install -y google-chrome-stable python3-pip python3-dev
    ```
 
 3. **Create Python virtual environment:**
@@ -93,6 +94,12 @@ chmod +x setup.sh
    ```bash
    pip3 install -r requirements.txt
    ```
+
+**Or use the automated setup script:**
+```bash
+chmod +x setup.sh
+./setup.sh
+```
 
 ## Verification
 
@@ -118,18 +125,20 @@ Expected output: `4.15.2`
 
 ## Total Disk Space Required
 
-- Chromium: ~300 MB
+- Google Chrome: ~200 MB
 - ChromeDriver: ~2 MB
 - Python dependencies: ~50 MB
 - Virtual environment: ~100 MB
-- **Total: ~450 MB**
+- **Total: ~350 MB**
 
 ## macOS Alternative
 
 On macOS, use Homebrew:
 ```bash
-brew install chromium chromedriver
+brew install google-chrome
 brew install python3
+python3 -m venv venv
+source venv/bin/activate
 pip3 install -r requirements.txt
 ```
 

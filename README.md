@@ -1,38 +1,40 @@
 # Router Restart Automation
 
-Automatically restart a ZTE F6605R router every night at 3 AM using Selenium.
+Automatically restart a ZTE F6605R router every night at 3 AM using Selenium and Google Chrome.
+
+**Status:** ✅ **FULLY WORKING** - Router restarts daily at 3:00 AM
 
 ## Quick Start
 
 ### Prerequisites
 - Linux machine with Python 3.7+
+- Google Chrome (automatically installed)
 - Network access to router at 92.82.75.79
 
-### Installation
+### Installation (Complete Setup)
 
 ```bash
 cd telecomRouterRestart
 chmod +x setup.sh
 ./setup.sh
-```
-
-### Test It Works
-
-```bash
-source venv/bin/activate
-python3 router_restart_test.py
-```
-
-Should output: `✓ TEST SUCCESSFUL - All steps verified!`
-
-### Schedule to Run Daily
-
-```bash
 chmod +x install_cron.sh
 ./install_cron.sh
 ```
 
-Done! Router will restart daily at **3:00 AM**.
+Done! Your router will restart automatically **every day at 3:00 AM**.
+
+### Verify Installation
+
+```bash
+# Check cron is scheduled
+crontab -l
+
+# View execution logs
+tail -f ~/router_restart.log
+
+# Check for successful restarts
+grep "Router restart initiated" ~/router_restart.log
+```
 
 ---
 
@@ -85,42 +87,56 @@ Edit `router_restart.py` to modify:
 
 ## Troubleshooting
 
-### Chrome/ChromeDriver Issues
+### Router Not Restarting?
 
-```bash
-which google-chrome  # or chromium-browser
-which chromedriver
+1. **Check cron job exists:**
+   ```bash
+   crontab -l
+   ```
+   Should show: `0 3 * * * /path/to/router_restart_cron.sh`
 
-# Install if missing
-sudo apt-get install chromium-browser chromium-chromedriver
-```
+2. **Verify Google Chrome is installed:**
+   ```bash
+   which google-chrome
+   google-chrome --version
+   ```
 
-### Permission Denied on /var/log
+3. **Check execution logs:**
+   ```bash
+   tail -50 ~/router_restart.log
+   ```
 
-On macOS, logs are saved to `~/router_restart.log` instead.
+4. **Verify router is accessible:**
+   ```bash
+   ping 92.82.75.79
+   ```
 
-### Script Fails to Run
-
-1. Verify router is online: `ping 92.82.75.79`
-2. Check credentials: admin / Debianhusk2
-3. View logs: `tail ~/router_restart.log`
+5. **Check credentials:**
+   - Router URL: https://92.82.75.79
+   - Username: admin
+   - Password: Debianhusk2 (edit `router_restart.py` if changed)
 
 ---
 
-## Files
+## Project Files
 
-- `router_restart.py` - Main production script
-- `router_restart_test.py` - Safe test version (doesn't restart)
-- `setup.sh` - Auto-install dependencies
-- `install_cron.sh` - Auto-schedule cron job
-- `requirements.txt` - Python packages
+| File | Purpose |
+|------|---------|
+| `router_restart.py` | Main production script - restarts router |
+| `router_restart_test.py` | Safe test version (verifies setup without restarting) |
+| `router_restart_cron.sh` | Cron wrapper - activates venv and runs script |
+| `setup.sh` | Auto-install Python dependencies |
+| `install_cron.sh` | Auto-schedule cron job for 3 AM daily |
+| `requirements.txt` | Python package dependencies (13 packages) |
+| `SYSTEM_REQUIREMENTS.md` | Complete system/browser requirements |
+| `CRON_SETUP_STATUS.md` | Detailed cron setup and troubleshooting |
 
----
+## Important Notes
 
-## Notes
-
-- Router restart takes ~5 minutes
-- During restart, internet will be unavailable
-- All actions are logged to `~/router_restart.log` (or `/var/log/router_restart.log` on Linux)
-- Cron job runs with full paths, no manual activation needed
+- **Browser:** Google Chrome (installed automatically via `setup.sh`)
+- **Schedule:** Daily at 3:00 AM (0 3 * * *)
+- **Downtime:** ~5 minutes during restart
+- **Logging:** `~/router_restart.log` (created automatically)
+- **Manual trigger:** `/home/andrei/telecomRouterRestart/router_restart_cron.sh`
+- **Tested and verified:** Working end-to-end ✅
 
