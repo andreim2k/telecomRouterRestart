@@ -36,6 +36,8 @@ logger = logging.getLogger(__name__)
 
 def setup_driver():
     """Initialize Chrome WebDriver in headless mode."""
+    import os
+
     chrome_options = Options()
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--no-sandbox")
@@ -43,6 +45,12 @@ def setup_driver():
     chrome_options.add_argument("--disable-gpu")
     chrome_options.add_argument("--ignore-certificate-errors")
     chrome_options.add_argument("--ignore-ssl-errors")
+
+    # Use pre-initialized persistent Chrome profile to avoid temp dir issues
+    profile_dir = os.path.expanduser("~/.local/share/chromium-router-restart")
+    if os.path.exists(profile_dir):
+        chrome_options.add_argument(f"--user-data-dir={profile_dir}")
+        logger.info(f"Using Chrome profile: {profile_dir}")
 
     driver = webdriver.Chrome(options=chrome_options)
     driver.set_page_load_timeout(TIMEOUT)
