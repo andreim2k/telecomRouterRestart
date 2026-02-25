@@ -6,6 +6,8 @@ Logs into a router at 192.168.1.1, navigates to restart page, and confirms resta
 
 import sys
 import logging
+import time
+import subprocess
 from datetime import datetime
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -15,9 +17,14 @@ from selenium.webdriver.chrome.options import Options
 
 # Configuration
 ROUTER_URL = "https://92.82.75.79"
+ROUTER_IP = "92.82.75.79"
 ROUTER_USERNAME = "admin"
 ROUTER_PASSWORD = "Debianhusk2"
 TIMEOUT = 10  # seconds
+LOGIN_RETRY_COUNT = 3  # Number of login attempts
+LOGIN_RETRY_DELAY = 5  # Seconds between login retries
+STARTUP_DELAY = 10  # Seconds to wait before first login attempt
+RESTART_TIMEOUT = 180  # Maximum seconds to wait for router to come back online
 
 # Setup logging
 import os
@@ -32,6 +39,55 @@ logging.basicConfig(
     ]
 )
 logger = logging.getLogger(__name__)
+
+
+def ping_router(timeout=5):
+    """Check if router is responding to ping."""
+    try:
+        result = subprocess.run(
+            ['ping', '-c', '1', '-W', str(timeout), ROUTER_IP],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            timeout=timeout + 1
+        )
+        return result.returncode == 0
+    except Exception as e:
+        logger.debug(f"Ping failed: {e}")
+        return False
+
+
+def wait_for_router_offline(max_wait=30):
+    """Wait for router to go offline (confirms restart initiated)."""
+    logger.info("Waiting for router to go offline...")
+    start_time = time.time()
+
+    while time.time() - start_time < max_wait:
+        if not ping_router(timeout=2):
+            logger.info("✓ Router is offline (restart in progress)")
+            return True
+        time.sleep(2)
+
+    logger.warning("Router did not go offline within timeout - restart may not have occurred")
+    return False
+
+
+def wait_for_router_online(max_wait=RESTART_TIMEOUT):
+    """Wait for router to come back online after restart."""
+    logger.info("Waiting for router to come back online...")
+    start_time = time.time()
+
+    while time.time() - start_time < max_wait:
+        if ping_router(timeout=2):
+            elapsed = int(time.time() - start_time)
+            logger.info(f"✓ Router is back online after {elapsed} seconds")
+            # Wait additional time for services to fully initialize
+            logger.info("Waiting for router services to fully initialize...")
+            time.sleep(STARTUP_DELAY)
+            return True
+        time.sleep(3)
+
+    logger.error(f"Router did not come back online within {max_wait} seconds")
+    return False
 
 
 def setup_driver():
@@ -53,42 +109,53 @@ def setup_driver():
     return driver
 
 
-def login(driver):
-    """Log into the router."""
-    try:
-        logger.info(f"Accessing router at {ROUTER_URL}")
-        driver.get(ROUTER_URL)
+def login(driver, retry=True):
+    """Log into the router with retry logic."""
+    attempts = LOGIN_RETRY_COUNT if retry else 1
 
-        # Wait for login form
-        WebDriverWait(driver, TIMEOUT).until(
-            EC.presence_of_element_located((By.NAME, "Frm_Username"))
-        )
+    for attempt in range(1, attempts + 1):
+        try:
+            if attempt > 1:
+                logger.info(f"Login attempt {attempt}/{attempts}...")
+                time.sleep(LOGIN_RETRY_DELAY)
 
-        # Fill login credentials
-        username_field = driver.find_element(By.NAME, "Frm_Username")
-        password_field = driver.find_element(By.NAME, "Frm_Password")
+            logger.info(f"Accessing router at {ROUTER_URL}")
+            driver.get(ROUTER_URL)
 
-        username_field.clear()
-        username_field.send_keys(ROUTER_USERNAME)
+            # Wait for login form
+            WebDriverWait(driver, TIMEOUT).until(
+                EC.presence_of_element_located((By.NAME, "Frm_Username"))
+            )
 
-        password_field.clear()
-        password_field.send_keys(ROUTER_PASSWORD)
+            # Fill login credentials
+            username_field = driver.find_element(By.NAME, "Frm_Username")
+            password_field = driver.find_element(By.NAME, "Frm_Password")
 
-        # Submit login form
-        login_button = driver.find_element(By.ID, "LoginId")
-        login_button.click()
+            username_field.clear()
+            username_field.send_keys(ROUTER_USERNAME)
 
-        logger.info("Login submitted, waiting for page load...")
-        # Wait for successful login (page should redirect)
-        WebDriverWait(driver, TIMEOUT).until(
-            EC.url_changes(ROUTER_URL)
-        )
-        logger.info("Successfully logged in")
-        return True
+            password_field.clear()
+            password_field.send_keys(ROUTER_PASSWORD)
 
-    except Exception as e:
-        logger.error(f"Login failed: {e}")
-        return False
+            # Submit login form
+            login_button = driver.find_element(By.ID, "LoginId")
+            login_button.click()
+
+            logger.info("Login submitted, waiting for page load...")
+            # Wait for successful login (page should redirect)
+            WebDriverWait(driver, TIMEOUT).until(
+                EC.url_changes(ROUTER_URL)
+            )
+            logger.info("✓ Successfully logged in")
+            return True
+
+        except Exception as e:
+            logger.error(f"Login attempt {attempt} failed: {e}")
+            if attempt == attempts:
+                logger.error(f"All {attempts} login attempts failed")
+                return False
+
+    return False
 
 
 def navigate_to_restart(driver):
@@ -194,6 +261,13 @@ def main():
 
     driver = None
     try:
+        # Health check: Verify router is online before starting
+        logger.info("Performing pre-restart health check...")
+        if not ping_router():
+            logger.error("Router is not responding to ping before restart attempt")
+            return 1
+        logger.info("✓ Router is online and responsive")
+
         driver = setup_driver()
 
         if not login(driver):
@@ -212,7 +286,29 @@ def main():
             return 1
 
         logger.info("=" * 50)
-        logger.info("Router restart initiated successfully!")
+        logger.info("Restart command sent successfully!")
+        logger.info("=" * 50)
+
+        # Close driver before waiting for restart
+        if driver:
+            driver.quit()
+            driver = None
+
+        # Verify actual restart occurred
+        logger.info("=" * 50)
+        logger.info("Verifying router restart...")
+        logger.info("=" * 50)
+
+        if not wait_for_router_offline(max_wait=30):
+            logger.warning("Could not confirm router went offline - restart verification inconclusive")
+            return 1
+
+        if not wait_for_router_online(max_wait=RESTART_TIMEOUT):
+            logger.error("Router did not come back online after restart")
+            return 1
+
+        logger.info("=" * 50)
+        logger.info("✓ ROUTER RESTART VERIFIED SUCCESSFULLY!")
         logger.info("=" * 50)
         return 0
 
