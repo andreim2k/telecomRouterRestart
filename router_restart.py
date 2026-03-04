@@ -261,13 +261,6 @@ def main():
 
     driver = None
     try:
-        # Health check: Verify router is online before starting
-        logger.info("Performing pre-restart health check...")
-        if not ping_router():
-            logger.error("Router is not responding to ping before restart attempt")
-            return 1
-        logger.info("✓ Router is online and responsive")
-
         driver = setup_driver()
 
         if not login(driver):
